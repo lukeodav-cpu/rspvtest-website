@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -47,26 +47,28 @@ function initializeDatabase() {
     });
 }
 
-// Configure email transporter
-// IMPORTANT: Replace these with your actual email credentials
+// Configure email transporter with environment variables
+console.log('🔧 Email Configuration:');
+console.log('   EMAIL_USER:', process.env.EMAIL_USER || 'NOT SET');
+console.log('   EMAIL_PASS:', process.env.EMAIL_PASS ? '***SET***' : 'NOT SET');
+
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // or 'smtp.gmail.com' for direct SMTP
+    service: 'gmail',
     auth: {
-        user: 'your-email@gmail.com', // Replace with your email
-        pass: 'your-app-password'      // Replace with your app password
+        user: process.env.EMAIL_USER || 'your-email@gmail.com',
+        pass: process.env.EMAIL_PASS || 'your-app-password'
     }
 });
 
-// Alternative SMTP configuration (for other email providers)
-// const transporter = nodemailer.createTransport({
-//     host: 'smtp.example.com',
-//     port: 587,
-//     secure: false,
-//     auth: {
-//         user: 'your-email@example.com',
-//         pass: 'your-password'
-//     }
-// });
+// Verify email configuration on startup
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('❌ Email configuration error:', error.message);
+        console.error('   Emails will NOT be sent. Please check your EMAIL_USER and EMAIL_PASS environment variables.');
+    } else {
+        console.log('✅ Email server is ready to send messages');
+    }
+});
 
 // RSVP submission endpoint
 app.post('/api/rsvp', async (req, res) => {
@@ -84,43 +86,47 @@ app.post('/api/rsvp', async (req, res) => {
     `;
 
     db.run(sql, [name, email, phone || null, attending, adults || 1, children || 0, dietary || null, song || null, message || null], 
-        function(err) {
+        async function(err) {
             if (err) {
-                console.error('Database error:', err);
+                console.error('❌ Database error:', err);
                 return res.status(500).json({ error: 'Failed to save RSVP' });
             }
 
-            console.log(`RSVP saved with ID: ${this.lastID}`);
+            console.log(`✅ RSVP saved with ID: ${this.lastID} for ${name} (${email})`);
 
-            // Send confirmation email
-            sendConfirmationEmail(name, email, attending, adults, children)
-                .then(() => {
-                    res.json({ 
-                        success: true, 
-                        message: 'RSVP received successfully',
-                        id: this.lastID 
-                    });
-                })
-                .catch((emailErr) => {
-                    console.error('Email error:', emailErr);
-                    // Still return success since RSVP was saved
-                    res.json({ 
-                        success: true, 
-                        message: 'RSVP received (email notification failed)',
-                        id: this.lastID 
-                    });
+            // Try to send confirmation email (but don't fail the RSVP if it doesn't work)
+            try {
+                await sendConfirmationEmail(name, email, attending, adults, children);
+                console.log(`✅ Confirmation email sent to ${email}`);
+                res.json({ 
+                    success: true, 
+                    message: 'RSVP received and confirmation email sent',
+                    id: this.lastID 
                 });
+            } catch (emailErr) {
+                console.error(`❌ Failed to send email to ${email}:`, emailErr.message);
+                // Still return success since RSVP was saved
+                res.json({ 
+                    success: true, 
+                    message: 'RSVP received successfully',
+                    warning: 'Email confirmation could not be sent',
+                    id: this.lastID 
+                });
+            }
         }
     );
 });
 
-// Send confirmation email
+// Send confirmation email with better error handling
 async function sendConfirmationEmail(name, email, attending, adults, children) {
+    console.log(`📧 Attempting to send email to: ${email}`);
+    console.log(`📧 From: ${process.env.EMAIL_USER}`);
+    
     const isAttending = attending === 'yes';
     const guestCount = parseInt(adults || 1) + parseInt(children || 0);
 
     const mailOptions = {
-        from: '"Sarah & Michael" <your-email@gmail.com>', // Replace with your email
+        from: `"Sarah & Michael" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: isAttending ? '✓ RSVP Confirmed - Sarah & Michael\'s Wedding' : 'RSVP Received - Sarah & Michael\'s Wedding',
         html: `
@@ -224,8 +230,74 @@ async function sendConfirmationEmail(name, email, attending, adults, children) {
         `
     };
 
-    return transporter.sendMail(mailOptions);
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully. Message ID: ${info.messageId}`);
+        return info;
+    } catch (error) {
+        console.error(`❌ Email send failed:`, error.message);
+        throw error;
+    }
 }
+
+// Test email endpoint (for debugging)
+app.get('/api/test-email', async (req, res) => {
+    console.log('🧪 Testing email configuration...');
+    console.log('   EMAIL_USER:', process.env.EMAIL_USER || 'NOT SET');
+    console.log('   EMAIL_PASS:', process.env.EMAIL_PASS ? '***SET***' : 'NOT SET');
+    
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        return res.status(500).json({
+            success: false,
+            error: 'Environment variables not set',
+            message: 'Please set EMAIL_USER and EMAIL_PASS in your hosting environment'
+        });
+    }
+
+    try {
+        const testMail = {
+            from: process.env.EMAIL_USER,
+            to: process.env.EMAIL_USER, // Send to yourself
+            subject: 'Test Email from Wedding RSVP System',
+            text: 'If you receive this, your email configuration is working correctly!',
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5;">
+                    <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; margin: 0 auto;">
+                        <h1 style="color: #4CAF50;">✅ Success!</h1>
+                        <p>Your email configuration is working correctly.</p>
+                        <p><strong>Configuration:</strong></p>
+                        <ul>
+                            <li>From: ${process.env.EMAIL_USER}</li>
+                            <li>Service: Gmail</li>
+                            <li>Time: ${new Date().toLocaleString()}</li>
+                        </ul>
+                        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                            This is a test email from your wedding RSVP system.
+                        </p>
+                    </div>
+                </div>
+            `
+        };
+        
+        const info = await transporter.sendMail(testMail);
+        console.log('✅ Test email sent successfully!');
+        
+        res.json({ 
+            success: true, 
+            message: 'Test email sent! Check your inbox.',
+            messageId: info.messageId,
+            from: process.env.EMAIL_USER
+        });
+    } catch (error) {
+        console.error('❌ Test email failed:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            details: error.toString(),
+            hint: 'Make sure EMAIL_USER and EMAIL_PASS are set correctly in environment variables'
+        });
+    }
+});
 
 // Get all RSVPs (for admin view)
 app.get('/api/rsvps', (req, res) => {
@@ -257,11 +329,26 @@ app.get('/api/rsvp-stats', (req, res) => {
     });
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS)
+    });
+});
+
 // Start server
 app.listen(PORT, () => {
-    console.log(`Wedding RSVP server running on http://localhost:${PORT}`);
-    console.log(`Registry page: http://localhost:${PORT}/registry.html`);
-    console.log(`RSVP page: http://localhost:${PORT}/rsvp.html`);
+    console.log('='.repeat(50));
+    console.log(`🎉 Wedding RSVP server running on port ${PORT}`);
+    console.log('='.repeat(50));
+    console.log(`📍 Local: http://localhost:${PORT}`);
+    console.log(`📄 Registry: http://localhost:${PORT}/registry.html`);
+    console.log(`💌 RSVP: http://localhost:${PORT}/rsvp.html`);
+    console.log(`📊 Admin: http://localhost:${PORT}/admin.html`);
+    console.log(`🧪 Test Email: http://localhost:${PORT}/api/test-email`);
+    console.log('='.repeat(50));
 });
 
 // Graceful shutdown
