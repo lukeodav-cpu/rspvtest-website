@@ -448,7 +448,8 @@
             form.style.display = 'none';
             
             try {
-                const response = await fetch('http://localhost:3000/api/rsvp', {
+                // Use relative URL - works both locally and deployed!
+                const response = await fetch('/api/rsvp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
