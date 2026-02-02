@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarah & Michael - Wedding Registry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FAF7F2;
+            --sage: #9BA888;
+            --terracotta: #C89F87;
+            --charcoal: #2C3333;
+            --soft-white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--cream);
+            color: var(--charcoal);
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: relative;
+            height: 60vh;
+            background: linear-gradient(135deg, var(--sage) 0%, var(--terracotta) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L90 90 L10 90 Z" fill="rgba(255,255,255,0.03)"/></svg>');
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
+        }
+
+        .header-content {
+            text-align: center;
+            color: var(--soft-white);
+            z-index: 1;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .header-content .ampersand {
+            font-size: 3rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 0 1rem;
+        }
+
+        .header-content p {
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .nav-bar {
+            background: var(--soft-white);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-bar a {
+            color: var(--charcoal);
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 400;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-bar a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--terracotta);
+            transition: width 0.3s;
+        }
+
+        .nav-bar a:hover {
+            color: var(--terracotta);
+        }
+
+        .nav-bar a:hover::after {
+            width: 100%;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .intro {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .intro h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: var(--sage);
+            margin-bottom: 1.5rem;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .registry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .registry-item {
+            background: var(--soft-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 1s ease-out both;
+        }
+
+        .registry-item:nth-child(1) { animation-delay: 0.1s; }
+        .registry-item:nth-child(2) { animation-delay: 0.2s; }
+        .registry-item:nth-child(3) { animation-delay: 0.3s; }
+        .registry-item:nth-child(4) { animation-delay: 0.4s; }
+        .registry-item:nth-child(5) { animation-delay: 0.5s; }
+        .registry-item:nth-child(6) { animation-delay: 0.6s; }
+
+        .registry-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .registry-item h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--charcoal);
+            margin-bottom: 1rem;
+        }
+
+        .registry-item p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .registry-link {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: var(--terracotta);
+            color: var(--soft-white);
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .registry-link:hover {
+            background: var(--sage);
+            transform: scale(1.05);
+        }
+
+        .footer {
+            background: var(--charcoal);
+            color: var(--cream);
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer .date {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .header-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .header-content .ampersand {
+                font-size: 2rem;
+            }
+
+            .nav-bar {
+                flex-wrap: wrap;
+                gap: 1.5rem;
+            }
+
+            .registry-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>Sarah <span class="ampersand">&</span> Michael</h1>
+            <p>Our Wedding Registry</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <a href="registry.html">Registry</a>
+        <a href="rsvp.html">RSVP</a>
+        <a href="#story">Our Story</a>
+        <a href="#details">Wedding Details</a>
+    </nav>
+
+    <div class="container">
+        <div class="intro">
+            <h2>Celebrate With Us</h2>
+            <p>Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, we've registered at the following stores. We're excited to start our new life together and deeply appreciate your love and support.</p>
+        </div>
+
+        <div class="registry-grid">
+            <div class="registry-item">
+                <h3>Crate & Barrel</h3>
+                <p>Find our selection of home essentials, kitchen items, and elegant tableware to help us create our first home together.</p>
+                <a href="#" class="registry-link">View Registry</a>
+            </div>
+
+            <div class="registry-item">
+                <h3>Williams Sonoma</h3>
+                <p>Browse our curated collection of premium cookware and kitchen gadgets for our culinary adventures ahead.</p>
+                <a href="#" class="registry-link">View Registry</a>
+            </div>
+
+            <div class="registry-item">
+                <h3>Target</h3>
+                <p>Discover everyday essentials and practical items to make our house feel like home from day one.</p>
+                <a href="#" class="registry-link">View Registry</a>
+            </div>
+
+            <div class="registry-item">
+                <h3>West Elm</h3>
+                <p>Explore our modern furniture selections and decor pieces that reflect our style and personality.</p>
+                <a href="#" class="registry-link">View Registry</a>
+            </div>
+
+            <div class="registry-item">
+                <h3>Amazon</h3>
+                <p>Find a variety of items from tech to home goods, offering convenience and endless possibilities.</p>
+                <a href="#" class="registry-link">View Registry</a>
+            </div>
+
+            <div class="registry-item">
+                <h3>Honeymoon Fund</h3>
+                <p>Help us create unforgettable memories on our honeymoon adventure to the Italian coast.</p>
+                <a href="#" class="registry-link">Contribute</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Sarah & Michael</p>
+        <p class="date">June 15, 2026</p>
+    </footer>
+</body>
+</html>

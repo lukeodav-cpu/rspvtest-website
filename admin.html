@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FAF7F2;
+            --sage: #9BA888;
+            --terracotta: #C89F87;
+            --charcoal: #2C3333;
+            --soft-white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--cream);
+            color: var(--charcoal);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--sage);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 3rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--soft-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: var(--sage);
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #E8E4DF;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            width: 300px;
+        }
+
+        .filter-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid var(--sage);
+            background: transparent;
+            color: var(--sage);
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: var(--sage);
+            color: white;
+        }
+
+        .export-btn {
+            padding: 0.8rem 1.5rem;
+            background: var(--terracotta);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            background: var(--soft-white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--sage), var(--terracotta));
+            color: white;
+        }
+
+        th {
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 500;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1.2rem;
+            border-bottom: 1px solid #E8E4DF;
+        }
+
+        tbody tr:hover {
+            background: var(--cream);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-yes {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-no {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                width: 100%;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RSVP Dashboard</h1>
+        <p class="subtitle">Sarah & Michael's Wedding</p>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Total Responses</h3>
+                <div class="number" id="totalRsvps">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Attending</h3>
+                <div class="number" id="attending">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Not Attending</h3>
+                <div class="number" id="notAttending">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Guests</h3>
+                <div class="number" id="totalGuests">0</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="Search by name or email...">
+            
+            <div class="filter-btns">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="yes">Attending</button>
+                <button class="filter-btn" data-filter="no">Not Attending</button>
+            </div>
+
+            <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Guests</th>
+                    <th>Dietary</th>
+                    <th>Song Request</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="rsvpTable">
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <h3>Loading RSVPs...</h3>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let allRsvps = [];
+        let currentFilter = 'all';
+
+        // Load RSVPs on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRsvps();
+            loadStats();
+        });
+
+        // Load RSVP statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('http://localhost:3000/api/rsvp-stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalRsvps').textContent = stats.total || 0;
+                document.getElementById('attending').textContent = stats.attending || 0;
+                document.getElementById('notAttending').textContent = stats.not_attending || 0;
+                document.getElementById('totalGuests').textContent = 
+                    (stats.total_adults || 0) + (stats.total_children || 0);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load all RSVPs
+        async function loadRsvps() {
+            try {
+                const response = await fetch('http://localhost:3000/api/rsvps');
+                allRsvps = await response.json();
+                displayRsvps(allRsvps);
+            } catch (error) {
+                console.error('Error loading RSVPs:', error);
+                document.getElementById('rsvpTable').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <h3>Error loading RSVPs</h3>
+                            <p>Please make sure the server is running</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Display RSVPs in table
+        function displayRsvps(rsvps) {
+            const tbody = document.getElementById('rsvpTable');
+            
+            if (rsvps.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <h3>No RSVPs yet</h3>
+                            <p>Responses will appear here once guests start RSVPing</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = rsvps.map(rsvp => `
+                <tr>
+                    <td><strong>${rsvp.name}</strong></td>
+                    <td>${rsvp.email}</td>
+                    <td>${rsvp.phone || '-'}</td>
+                    <td>
+                        <span class="status-badge status-${rsvp.attending}">
+                            ${rsvp.attending === 'yes' ? 'Attending' : 'Not Attending'}
+                        </span>
+                    </td>
+                    <td>${rsvp.adults || 1} adults, ${rsvp.children || 0} children</td>
+                    <td>${rsvp.dietary || '-'}</td>
+                    <td>${rsvp.song || '-'}</td>
+                    <td>${new Date(rsvp.created_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                filterRsvps();
+            });
+        });
+
+        // Search box
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            filterRsvps();
+        });
+
+        // Filter RSVPs
+        function filterRsvps() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            
+            let filtered = allRsvps;
+            
+            // Apply status filter
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(rsvp => rsvp.attending === currentFilter);
+            }
+            
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(rsvp => 
+                    rsvp.name.toLowerCase().includes(searchTerm) ||
+                    rsvp.email.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            displayRsvps(filtered);
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const headers = ['Name', 'Email', 'Phone', 'Attending', 'Adults', 'Children', 'Dietary', 'Song', 'Message', 'Date'];
+            const rows = allRsvps.map(rsvp => [
+                rsvp.name,
+                rsvp.email,
+                rsvp.phone || '',
+                rsvp.attending,
+                rsvp.adults || 1,
+                rsvp.children || 0,
+                rsvp.dietary || '',
+                rsvp.song || '',
+                rsvp.message || '',
+                new Date(rsvp.created_at).toLocaleString()
+            ]);
+
+            const csv = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'wedding_rsvps.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
