@@ -283,7 +283,8 @@
         // Load RSVP statistics
         async function loadStats() {
             try {
-                const response = await fetch('http://localhost:3000/api/rsvp-stats');
+                // Use relative URL - works both locally and deployed!
+                const response = await fetch('/api/rsvp-stats');
                 const stats = await response.json();
                 
                 document.getElementById('totalRsvps').textContent = stats.total || 0;
@@ -299,7 +300,8 @@
         // Load all RSVPs
         async function loadRsvps() {
             try {
-                const response = await fetch('http://localhost:3000/api/rsvps');
+                // Use relative URL - works both locally and deployed!
+                const response = await fetch('/api/rsvps');
                 allRsvps = await response.json();
                 displayRsvps(allRsvps);
             } catch (error) {
